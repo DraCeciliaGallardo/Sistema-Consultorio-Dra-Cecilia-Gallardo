@@ -301,6 +301,18 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 <script>
 const STORAGE_KEY = "portal_productos_data";
 
+/*
+  FUENTE AUTOMÁTICA DEL EXCEL
+  Configurado para leer la hoja de Google Drive de la doctora (pestaña gid=1515368183).
+  Requisitos en Drive para que funcione:
+    1) El archivo debe ser Hoja de cálculo de Google (si es .xlsx subido,
+       usar Archivo → Guardar como hoja de cálculo de Google).
+    2) Compartir → Cualquier persona con el enlace → Lector.
+  Si en algún momento se usa "Publicar en la web" (Archivo → Compartir →
+  Publicar en la web → CSV), pegue aquí ese link en su lugar.
+*/
+const ARCHIVO_AUTOMATICO = "https://docs.google.com/spreadsheets/d/1erbUddBPGzWEiTkoaJOI76zYjBkD3s_8L3xEkkMbq6E/gviz/tq?tqx=out:csv&gid=1515368183";
+
 let headers = [];
 let rows = [];          // celdas como TEXTO FORMATEADO, tal cual se ven en Excel
 let filteredRows = [];
@@ -346,42 +358,51 @@ uploadZone.addEventListener("drop", e=>{
   if(e.dataTransfer.files.length) readFile(e.dataTransfer.files[0]);
 });
 
+/*
+  parseWorkbook: convierte los bytes del Excel/CSV en {headers, rows}.
+  raw:false hace que SheetJS devuelva el TEXTO FORMATEADO de cada celda
+  (propiedad .w), respetando el formato original del Excel:
+  decimales, símbolos de moneda, porcentajes, fechas, ceros a la izquierda, etc.
+*/
+function parseWorkbook(arrayBuffer){
+  const wb = XLSX.read(new Uint8Array(arrayBuffer), {type:"array"});
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const data = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, defval:""});
+  if(!data.length) return null;
+  const headerRowIdx = data.findIndex(r => r.some(c => String(c).trim() !== ""));
+  if(headerRowIdx === -1) return null;
+  const hdrs = data[headerRowIdx].map(h => String(h).trim() || "(sin nombre)");
+  const rws = data.slice(headerRowIdx + 1)
+    .filter(r => r.some(c => String(c).trim() !== ""))
+    .map(r => hdrs.map((_, i) => r[i] !== undefined ? String(r[i]) : ""));
+  return {headers: hdrs, rows: rws};
+}
+
+function savePayload(payload){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  }catch(err){
+    showToast("Archivo cargado (muy grande para guardarse en este dispositivo)");
+  }
+}
+
 function readFile(file){
   const reader = new FileReader();
   reader.onload = e=>{
     try{
-      const wb = XLSX.read(new Uint8Array(e.target.result), {type:"array"});
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      /*
-        raw:false hace que SheetJS devuelva el TEXTO FORMATEADO de cada celda
-        (propiedad .w), respetando el formato original del Excel:
-        decimales, símbolos de moneda, porcentajes, fechas, ceros a la izquierda, etc.
-      */
-      const data = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, defval:""});
-      if(!data.length){
-        showToast("El archivo está vacío");
-        return;
-      }
-      let headerRowIdx = data.findIndex(r => r.some(c => String(c).trim() !== ""));
-      if(headerRowIdx === -1){
+      const parsed = parseWorkbook(e.target.result);
+      if(!parsed){
         showToast("No se encontraron datos en el archivo");
         return;
       }
-      headers = data[headerRowIdx].map(h => String(h).trim() || "(sin nombre)");
-      rows = data.slice(headerRowIdx + 1)
-        .filter(r => r.some(c => String(c).trim() !== ""))
-        .map(r => headers.map((_, i) => r[i] !== undefined ? String(r[i]) : ""));
-
       const payload = {
         fileName: file.name,
         uploadedAt: new Date().toLocaleString("es-EC"),
-        headers, rows
+        manual: true,   // la carga manual tiene prioridad en este dispositivo
+        headers: parsed.headers,
+        rows: parsed.rows
       };
-      try{
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-      }catch(err){
-        showToast("Archivo cargado (muy grande para guardarse en este dispositivo)");
-      }
+      savePayload(payload);
       renderAll(payload);
       showToast("Archivo cargado correctamente");
     }catch(err){
@@ -390,6 +411,30 @@ function readFile(file){
     }
   };
   reader.readAsArrayBuffer(file);
+}
+
+/* Carga automática desde el repositorio o link publicado (ARCHIVO_AUTOMATICO) */
+async function cargarArchivoAutomatico(){
+  if(!ARCHIVO_AUTOMATICO) return false;
+  try{
+    const resp = await fetch(ARCHIVO_AUTOMATICO, {cache:"no-store"});
+    if(!resp.ok) return false;
+    const parsed = parseWorkbook(await resp.arrayBuffer());
+    if(!parsed) return false;
+    const payload = {
+      fileName: "Catálogo desde Google Drive (se actualiza automáticamente)",
+      uploadedAt: new Date().toLocaleString("es-EC"),
+      manual: false,
+      headers: parsed.headers,
+      rows: parsed.rows
+    };
+    savePayload(payload);
+    renderAll(payload);
+    return true;
+  }catch(err){
+    console.error("Carga automática no disponible:", err);
+    return false;
+  }
 }
 
 function clearData(){
@@ -403,6 +448,8 @@ function clearData(){
   document.getElementById("searchBox").value = "";
   fileInput.value = "";
   showToast("Archivo eliminado");
+  // Si existe un catálogo automático del sitio, se vuelve a mostrar
+  cargarArchivoAutomatico();
 }
 
 /* ---------- Render ---------- */
@@ -427,9 +474,20 @@ function renderAll(payload){
 
 function toNumber(v){
   if(typeof v === "number") return v;
-  const s = String(v).trim();
+  let s = String(v).trim();
   if(s === "") return null;
-  const n = parseFloat(s.replace(/[^0-9.\-]/g, ""));
+  s = s.replace(/[^0-9.,\-]/g, "");
+  if(s === "" || s === "-") return null;
+  const hasComma = s.includes(",");
+  const hasDot = s.includes(".");
+  if(hasComma && hasDot){
+    // Formato ecuatoriano: punto = miles, coma = decimal ($ 5.750,00 → 5750.00)
+    s = s.replace(/\./g, "").replace(",", ".");
+  }else if(hasComma){
+    // Solo coma: es el decimal ($ 300,00 → 300.00)
+    s = s.replace(",", ".");
+  }
+  const n = parseFloat(s);
   return isNaN(n) ? null : n;
 }
 
@@ -512,18 +570,28 @@ function escapeHtml(s){
 
 document.getElementById("searchBox").addEventListener("input", applyFilter);
 
-/* ---------- Al abrir: restaurar el último archivo cargado ---------- */
-(function init(){
+/* ---------- Al abrir ----------
+   1) Si hay un Excel subido manualmente en este dispositivo, ese manda.
+   2) Si no, se carga el catálogo automático del sitio (repositorio o link publicado).
+   3) Si no hay internet, se usa la última copia guardada en el dispositivo.
+*/
+(async function init(){
+  let saved = null;
   try{
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if(saved){
-      const payload = JSON.parse(saved);
-      if(payload.headers && payload.rows){
-        renderAll(payload);
-      }
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const p = JSON.parse(raw);
+      if(p.headers && p.rows) saved = p;
     }
-  }catch(err){
-    console.error(err);
+  }catch(err){ console.error(err); }
+
+  if(saved && saved.manual){
+    renderAll(saved);
+    return;
+  }
+  const ok = await cargarArchivoAutomatico();
+  if(!ok && saved){
+    renderAll(saved);
   }
 })();
 </script>
