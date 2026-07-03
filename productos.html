@@ -113,6 +113,50 @@ body{
   flex-wrap:wrap;
 }
 .file-status b{color:#1f4a3c}
+/* ---- Mantenimiento (mismo patrón del portal) ---- */
+.maintenance{
+  margin-top:12px;
+  padding:10px;
+  background:#fcfbff;
+  border:1px dashed #c7b7ea;
+  border-radius:10px;
+}
+.maintenance label{
+  display:block;
+  font-size:11px;
+  font-weight:900;
+  color:var(--violeta-oscuro);
+  margin-bottom:5px;
+  text-transform:uppercase;
+}
+.maintenance input{
+  width:100%;
+  padding:10px;
+  border:1px solid #d7d2e4;
+  border-radius:8px;
+  font-size:13px;
+}
+.maintenance input:focus{
+  outline:none;
+  border-color:var(--violeta);
+  box-shadow:0 0 0 3px rgba(138,111,197,.14);
+}
+.maintenance .actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.btn-maintenance{
+  background:var(--verde);
+  color:#315d4e;
+  border:1px solid var(--verde-borde);
+  border-radius:8px;
+  padding:9px 13px;
+  font-weight:800;
+  cursor:pointer;
+  font-size:13px;
+}
 .btn{
   border:none;
   border-radius:8px;
@@ -203,6 +247,15 @@ tbody td{
 tbody tr:nth-child(even){background:#faf8fe}
 tbody tr:hover{background:var(--violeta-suave)}
 td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* Columnas de códigos angostas (~3 caracteres) para aprovechar la pantalla */
+th.col-codigo, td.col-codigo{
+  width:3ch;
+  max-width:6ch;
+  white-space:normal;
+  word-break:break-all;
+  padding-left:6px;
+  padding-right:6px;
+}
 .empty-state{
   padding:34px 16px;
   text-align:center;
@@ -267,6 +320,14 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
       <span id="fileInfo"></span>
       <button class="btn btn-soft" onclick="clearData()">Quitar archivo</button>
     </div>
+    <div class="maintenance">
+      <label>Mantenimiento - link de la hoja de Google del catálogo</label>
+      <input id="sheetLink" placeholder="Pegue aquí el link de la hoja de Google (sirve el link normal del navegador)">
+      <div class="actions">
+        <button class="btn-maintenance" onclick="guardarFuente()">Guardar link</button>
+        <button class="btn-maintenance" onclick="restaurarFuente()">Restaurar link fijo</button>
+      </div>
+    </div>
   </div>
 
   <!-- Búsqueda / acciones -->
@@ -312,6 +373,56 @@ const STORAGE_KEY = "portal_productos_data";
   Publicar en la web → CSV), pegue aquí ese link en su lugar.
 */
 const ARCHIVO_AUTOMATICO = "https://docs.google.com/spreadsheets/d/1erbUddBPGzWEiTkoaJOI76zYjBkD3s_8L3xEkkMbq6E/gviz/tq?tqx=out:csv&gid=1515368183";
+
+/* ---- Mantenimiento del link (mismo patrón del portal) ----
+   El link fijo de arriba viene cargado por defecto. Si la hoja cambia,
+   pegue el link nuevo en Mantenimiento y presione Guardar link:
+   se usará ese link guardado localmente, sin tocar este archivo.
+*/
+const SHEET_KEY = "portal_productos_sheet";
+
+function normalizarLinkHoja(url){
+  url = url.trim();
+  if(!url) return "";
+  // Acepta el link normal del navegador (…/spreadsheets/d/ID/edit…gid=N)
+  // y lo convierte al formato de lectura CSV que la página necesita
+  const m = url.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9\-_]+)/);
+  if(m){
+    const id = m[1];
+    const g = url.match(/[#?&]gid=(\d+)/);
+    const gid = g ? g[1] : "0";
+    return "https://docs.google.com/spreadsheets/d/" + id + "/gviz/tq?tqx=out:csv&gid=" + gid;
+  }
+  return url; // otros links (publicado en la web, archivo del repositorio, etc.)
+}
+
+function getFuente(){
+  const guardado = localStorage.getItem(SHEET_KEY);
+  return (guardado && guardado.trim()) || ARCHIVO_AUTOMATICO;
+}
+
+function guardarFuente(){
+  const input = document.getElementById("sheetLink");
+  const norm = normalizarLinkHoja(input.value);
+  if(!norm){
+    showToast("Pegue primero el link de la hoja");
+    return;
+  }
+  localStorage.setItem(SHEET_KEY, norm);
+  input.value = norm;
+  localStorage.removeItem(STORAGE_KEY); // descarta la copia anterior y recarga
+  showToast("Link guardado, cargando catálogo...");
+  cargarArchivoAutomatico();
+}
+
+function restaurarFuente(){
+  if(!confirm("¿Desea volver al link fijo del catálogo?")) return;
+  localStorage.removeItem(SHEET_KEY);
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById("sheetLink").value = ARCHIVO_AUTOMATICO;
+  showToast("Se restauró el link fijo");
+  cargarArchivoAutomatico();
+}
 
 let headers = [];
 let rows = [];          // celdas como TEXTO FORMATEADO, tal cual se ven en Excel
@@ -413,11 +524,12 @@ function readFile(file){
   reader.readAsArrayBuffer(file);
 }
 
-/* Carga automática desde el repositorio o link publicado (ARCHIVO_AUTOMATICO) */
+/* Carga automática desde la hoja de Google (link fijo o el guardado en Mantenimiento) */
 async function cargarArchivoAutomatico(){
-  if(!ARCHIVO_AUTOMATICO) return false;
+  const fuente = getFuente();
+  if(!fuente) return false;
   try{
-    const resp = await fetch(ARCHIVO_AUTOMATICO, {cache:"no-store"});
+    const resp = await fetch(fuente, {cache:"no-store"});
     if(!resp.ok) return false;
     const parsed = parseWorkbook(await resp.arrayBuffer());
     if(!parsed) return false;
@@ -522,6 +634,12 @@ function renderTable(){
   const head = document.getElementById("tableHead");
   const body = document.getElementById("tableBody");
 
+  // Columnas angostas: Código Principal y Código Auxiliar
+  const esCodigo = headers.map(h => {
+    const n = String(h).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return n.includes("codigo") && (n.includes("principal") || n.includes("auxiliar"));
+  });
+
   // Columnas numéricas (solo para alinear a la derecha; el texto no se modifica)
   const numCols = headers.map((_, i) =>
     rows.length > 0 && rows.every(r => {
@@ -534,7 +652,7 @@ function renderTable(){
   headers.forEach((h,i)=>{
     let arrow = "";
     if(i === sortCol) arrow = '<span class="arrow">' + (sortAsc ? "▲" : "▼") + '</span>';
-    hHtml += '<th onclick="sortBy(' + i + ')">' + escapeHtml(h) + arrow + "</th>";
+    hHtml += '<th' + (esCodigo[i] ? ' class="col-codigo"' : '') + ' onclick="sortBy(' + i + ')">' + escapeHtml(h) + arrow + "</th>";
   });
   hHtml += "</tr>";
   head.innerHTML = hHtml;
@@ -544,7 +662,10 @@ function renderTable(){
     bHtml += "<tr>";
     r.forEach((c,i)=>{
       // Se muestra el texto EXACTO del Excel, sin reformatear
-      bHtml += '<td' + (numCols[i] ? ' class="num"' : '') + '>' + escapeHtml(String(c)) + "</td>";
+      const clases = [];
+      if(numCols[i] && !esCodigo[i]) clases.push("num");
+      if(esCodigo[i]) clases.push("col-codigo");
+      bHtml += '<td' + (clases.length ? ' class="' + clases.join(" ") + '"' : '') + '>' + escapeHtml(String(c)) + "</td>";
     });
     bHtml += "</tr>";
   });
@@ -576,6 +697,9 @@ document.getElementById("searchBox").addEventListener("input", applyFilter);
    3) Si no hay internet, se usa la última copia guardada en el dispositivo.
 */
 (async function init(){
+  // Mostrar en Mantenimiento el link en uso (guardado o fijo)
+  document.getElementById("sheetLink").value = getFuente();
+
   let saved = null;
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
