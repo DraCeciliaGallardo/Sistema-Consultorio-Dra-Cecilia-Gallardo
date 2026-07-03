@@ -93,7 +93,7 @@ body{
   font-size:17px;
 }
 .upload-zone p{
-  margin:0;
+  margin:0 0 12px;
   color:#6b6380;
   font-size:13px;
 }
@@ -123,40 +123,7 @@ body{
 }
 .btn-main{background:var(--violeta);color:white}
 .btn-soft{background:var(--rosado);color:#4a2330;border:1px solid var(--rosado-borde)}
-/* ---- Resumen ---- */
-.stats{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-  margin-top:14px;
-}
-.stat{
-  background:white;
-  border:1px solid var(--borde);
-  border-radius:14px;
-  padding:14px 16px;
-  box-shadow:0 3px 14px rgba(41,35,68,.06);
-}
-.stat .label{
-  font-size:11px;
-  font-weight:900;
-  color:var(--violeta-oscuro);
-  text-transform:uppercase;
-  letter-spacing:.4px;
-}
-.stat .value{
-  margin-top:6px;
-  font-size:22px;
-  font-weight:900;
-  color:var(--texto);
-  word-break:break-word;
-}
-.stat .sub{
-  margin-top:3px;
-  font-size:11px;
-  color:#7a728c;
-}
-/* ---- Controles de tabla ---- */
+/* ---- Controles ---- */
 .controls{
   margin-top:14px;
   background:white;
@@ -203,7 +170,7 @@ body{
 }
 .table-scroll{
   overflow-x:auto;
-  max-height:64vh;
+  max-height:70vh;
   overflow-y:auto;
 }
 table{
@@ -235,7 +202,7 @@ tbody td{
 }
 tbody tr:nth-child(even){background:#faf8fe}
 tbody tr:hover{background:var(--violeta-suave)}
-td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .empty-state{
   padding:34px 16px;
   text-align:center;
@@ -264,12 +231,16 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-
   z-index:99;
 }
 @media(max-width:860px){
-  .stats{grid-template-columns:repeat(2,1fr)}
   .header h1{font-size:21px}
   .back-link{position:static;display:inline-block;margin-bottom:8px}
 }
-@media(max-width:480px){
-  .stats{grid-template-columns:1fr}
+/* ---- Impresión: solo la tabla ---- */
+@media print{
+  .upload-card, .controls, .back-link, .footer, .toast{display:none !important}
+  .table-scroll{max-height:none;overflow:visible}
+  .table-card{box-shadow:none;border:none}
+  thead th{position:static;background:#eee;color:#000}
+  body{background:white}
 }
 </style>
 </head>
@@ -285,10 +256,11 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-
 
   <!-- Carga de Excel -->
   <div class="upload-card">
-    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+    <div class="upload-zone" id="uploadZone">
       <div class="big-icon">📄</div>
       <h2>Subir Excel de productos</h2>
-      <p>Haga clic aquí o arrastre el archivo .xlsx exportado del sistema de facturación</p>
+      <p>Arrastre y suelte aquí el archivo .xlsx, o use el botón</p>
+      <button class="btn btn-main" id="selectBtn" type="button">Seleccionar archivo</button>
     </div>
     <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
     <div class="file-status" id="fileStatus">
@@ -297,12 +269,9 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-
     </div>
   </div>
 
-  <!-- Resumen -->
-  <div class="stats hidden" id="statsRow"></div>
-
-  <!-- Búsqueda -->
+  <!-- Búsqueda / acciones -->
   <div class="controls hidden" id="controlsRow">
-    <input type="text" id="searchBox" placeholder="Buscar por código, nombre o descripción...">
+    <input type="text" id="searchBox" placeholder="Buscar por código, nombre, descripción o valor...">
     <span class="count-pill" id="countPill"></span>
     <button class="btn btn-main" onclick="window.print()">Imprimir</button>
   </div>
@@ -318,7 +287,7 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-
   </div>
 
   <div class="empty-state" id="emptyState">
-    Aún no se ha cargado ningún archivo. Suba el Excel de productos para ver el dashboard.
+    Aún no se ha cargado ningún archivo. Suba el Excel de productos para consultar el catálogo.
   </div>
 
   <div class="footer">
@@ -333,7 +302,7 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-
 const STORAGE_KEY = "portal_productos_data";
 
 let headers = [];
-let rows = [];          // array de arrays, en el orden de headers
+let rows = [];          // celdas como TEXTO FORMATEADO, tal cual se ven en Excel
 let filteredRows = [];
 let sortCol = -1;
 let sortAsc = true;
@@ -345,10 +314,17 @@ function showToast(message){
   setTimeout(()=>{ toast.style.display = "none"; }, 2300);
 }
 
-/* ---------- Carga del archivo ---------- */
+/* ---------- Carga del archivo (botón y arrastrar/soltar) ---------- */
 
 const fileInput = document.getElementById("fileInput");
 const uploadZone = document.getElementById("uploadZone");
+const selectBtn = document.getElementById("selectBtn");
+
+selectBtn.addEventListener("click", e=>{
+  e.stopPropagation();
+  fileInput.click();
+});
+uploadZone.addEventListener("click", ()=> fileInput.click());
 
 fileInput.addEventListener("change", e=>{
   if(e.target.files.length) readFile(e.target.files[0]);
@@ -376,12 +352,16 @@ function readFile(file){
     try{
       const wb = XLSX.read(new Uint8Array(e.target.result), {type:"array"});
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const data = XLSX.utils.sheet_to_json(ws, {header:1, defval:""});
+      /*
+        raw:false hace que SheetJS devuelva el TEXTO FORMATEADO de cada celda
+        (propiedad .w), respetando el formato original del Excel:
+        decimales, símbolos de moneda, porcentajes, fechas, ceros a la izquierda, etc.
+      */
+      const data = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, defval:""});
       if(!data.length){
         showToast("El archivo está vacío");
         return;
       }
-      // Primera fila con contenido = encabezados
       let headerRowIdx = data.findIndex(r => r.some(c => String(c).trim() !== ""));
       if(headerRowIdx === -1){
         showToast("No se encontraron datos en el archivo");
@@ -390,7 +370,7 @@ function readFile(file){
       headers = data[headerRowIdx].map(h => String(h).trim() || "(sin nombre)");
       rows = data.slice(headerRowIdx + 1)
         .filter(r => r.some(c => String(c).trim() !== ""))
-        .map(r => headers.map((_, i) => r[i] !== undefined ? r[i] : ""));
+        .map(r => headers.map((_, i) => r[i] !== undefined ? String(r[i]) : ""));
 
       const payload = {
         fileName: file.name,
@@ -417,7 +397,6 @@ function clearData(){
   localStorage.removeItem(STORAGE_KEY);
   headers = []; rows = []; filteredRows = [];
   document.getElementById("fileStatus").style.display = "none";
-  document.getElementById("statsRow").classList.add("hidden");
   document.getElementById("controlsRow").classList.add("hidden");
   document.getElementById("tableCard").classList.add("hidden");
   document.getElementById("emptyState").classList.remove("hidden");
@@ -440,67 +419,18 @@ function renderAll(payload){
     payload.uploadedAt + " · " + rows.length + " productos";
 
   document.getElementById("emptyState").classList.add("hidden");
-  document.getElementById("statsRow").classList.remove("hidden");
   document.getElementById("controlsRow").classList.remove("hidden");
   document.getElementById("tableCard").classList.remove("hidden");
 
-  renderStats();
   applyFilter();
-}
-
-function findValueCol(){
-  // Busca la columna de valor/precio para las estadísticas
-  const idx = headers.findIndex(h => /valor|precio|monto/i.test(h));
-  return idx;
 }
 
 function toNumber(v){
   if(typeof v === "number") return v;
-  const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ""));
+  const s = String(v).trim();
+  if(s === "") return null;
+  const n = parseFloat(s.replace(/[^0-9.\-]/g, ""));
   return isNaN(n) ? null : n;
-}
-
-function money(n){
-  return "$" + n.toLocaleString("es-EC", {minimumFractionDigits:2, maximumFractionDigits:2});
-}
-
-function renderStats(){
-  const statsRow = document.getElementById("statsRow");
-  statsRow.innerHTML = "";
-
-  const cards = [];
-  cards.push({label:"Total de productos", value: rows.length, sub:"registros en el catálogo"});
-
-  const vCol = findValueCol();
-  if(vCol !== -1){
-    const nums = rows.map(r => toNumber(r[vCol])).filter(n => n !== null);
-    if(nums.length){
-      const sum = nums.reduce((a,b)=>a+b,0);
-      const max = Math.max(...nums);
-      const min = Math.min(...nums.filter(n=>n>0).length ? nums.filter(n=>n>0) : nums);
-      const maxRow = rows.find(r => toNumber(r[vCol]) === max);
-      const nameCol = headers.findIndex(h => /nombre|descrip|producto/i.test(h));
-      cards.push({label:"Valor promedio", value: money(sum/nums.length), sub:"según columna " + headers[vCol]});
-      cards.push({
-        label:"Producto de mayor valor",
-        value: money(max),
-        sub: maxRow && nameCol !== -1 ? String(maxRow[nameCol]).slice(0,60) : ""
-      });
-      cards.push({label:"Valor mínimo", value: money(min), sub:"del catálogo"});
-    }
-  }
-  if(cards.length === 1){
-    cards.push({label:"Columnas", value: headers.length, sub: headers.slice(0,4).join(", ") + (headers.length>4?"...":"")});
-  }
-
-  cards.forEach(c=>{
-    const div = document.createElement("div");
-    div.className = "stat";
-    div.innerHTML = '<div class="label">' + escapeHtml(c.label) + '</div>' +
-                    '<div class="value">' + escapeHtml(String(c.value)) + '</div>' +
-                    '<div class="sub">' + escapeHtml(c.sub || "") + '</div>';
-    statsRow.appendChild(div);
-  });
 }
 
 function applyFilter(){
@@ -509,10 +439,14 @@ function applyFilter(){
     rows.filter(r => r.some(c => String(c).toLowerCase().includes(q)));
 
   if(sortCol !== -1){
-    const vColIsNum = filteredRows.every(r => toNumber(r[sortCol]) !== null || String(r[sortCol]).trim()==="");
+    // La columna se ordena numéricamente si todas sus celdas con contenido son números
+    const colIsNum = filteredRows.length > 0 && filteredRows.every(r => {
+      const s = String(r[sortCol]).trim();
+      return s === "" || toNumber(s) !== null;
+    });
     filteredRows.sort((a,b)=>{
       let va = a[sortCol], vb = b[sortCol];
-      if(vColIsNum){
+      if(colIsNum){
         va = toNumber(va); vb = toNumber(vb);
         va = va === null ? -Infinity : va;
         vb = vb === null ? -Infinity : vb;
@@ -529,7 +463,14 @@ function applyFilter(){
 function renderTable(){
   const head = document.getElementById("tableHead");
   const body = document.getElementById("tableBody");
-  const vCol = findValueCol();
+
+  // Columnas numéricas (solo para alinear a la derecha; el texto no se modifica)
+  const numCols = headers.map((_, i) =>
+    rows.length > 0 && rows.every(r => {
+      const s = String(r[i]).trim();
+      return s === "" || toNumber(s) !== null;
+    }) && rows.some(r => String(r[i]).trim() !== "")
+  );
 
   let hHtml = "<tr>";
   headers.forEach((h,i)=>{
@@ -544,13 +485,8 @@ function renderTable(){
   filteredRows.forEach(r=>{
     bHtml += "<tr>";
     r.forEach((c,i)=>{
-      const n = toNumber(c);
-      const isNumCell = (i === vCol) && n !== null && String(c).trim() !== "";
-      if(isNumCell){
-        bHtml += '<td class="num">' + money(n) + "</td>";
-      }else{
-        bHtml += "<td>" + escapeHtml(String(c)) + "</td>";
-      }
+      // Se muestra el texto EXACTO del Excel, sin reformatear
+      bHtml += '<td' + (numCols[i] ? ' class="num"' : '') + '>' + escapeHtml(String(c)) + "</td>";
     });
     bHtml += "</tr>";
   });
@@ -576,7 +512,7 @@ function escapeHtml(s){
 
 document.getElementById("searchBox").addEventListener("input", applyFilter);
 
-/* ---------- Al abrir: restaurar último archivo cargado ---------- */
+/* ---------- Al abrir: restaurar el último archivo cargado ---------- */
 (function init(){
   try{
     const saved = localStorage.getItem(STORAGE_KEY);
