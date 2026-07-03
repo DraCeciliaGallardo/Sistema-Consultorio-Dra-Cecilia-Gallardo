@@ -298,6 +298,20 @@ input:focus{
       </div>
     </div>
 
+    <div class="card">
+      <div class="icon">📦</div>
+      <h2>Productos Facturados</h2>
+      <p>Consulta del catálogo de productos y servicios que se facturan: suba el Excel y revise el dashboard.</p>
+      <div class="actions">
+        <button class="btn-main" onclick="openLink('productos')">Abrir consulta de productos</button>
+        <button class="btn-maintenance" onclick="focusField('productos')">Mantenimiento</button>
+      </div>
+      <div class="maintenance">
+        <label>Mantenimiento - link Productos Facturados</label>
+        <input id="productos" placeholder="Pegue aquí el link del repositorio GitHub">
+      </div>
+    </div>
+
   </div>
 
   <div class="save-panel">
@@ -326,7 +340,8 @@ const fields = [
   "pacienteEs",
   "pacienteEn",
   "consentimiento",
-  "receta"
+  "receta",
+  "productos"
 ];
 
 /*
@@ -340,7 +355,8 @@ const defaultLinks = {
   pacienteEs: "https://draceciliagallardo.github.io/hc-llenar-paciente/",
   pacienteEn: "https://draceciliagallardo.github.io/Patient_Medical_history/",
   consentimiento: "",
-  receta: ""
+  receta: "",
+  productos: "productos.html"
 };
 
 function showToast(message){
