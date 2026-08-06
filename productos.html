@@ -1,724 +1,334 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Productos Facturados · Portal Dra. Cecilia Gallardo</title>
-<link rel="icon" type="image/png" href="icono-dra-gallardo.png">
-<meta name="theme-color" content="#8a6fc5">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
-*{box-sizing:border-box}
-:root{
-  --violeta:#8a6fc5;
-  --violeta-oscuro:#6f55ad;
-  --violeta-suave:#f4effc;
-  --rosado:#f8d7df;
-  --rosado-borde:#e7b8c4;
-  --texto:#2f2a45;
-  --borde:#ddd8ec;
-  --verde:#eef8f4;
-  --verde-borde:#b9ded0;
-}
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:linear-gradient(180deg,#fff,#f8f6fd);
-  color:var(--texto);
-}
-.page{
-  max-width:1180px;
-  margin:18px auto 32px;
-  padding:0 16px;
-}
-.header{
-  background:white;
-  border:1.5px solid var(--violeta);
-  border-radius:14px;
-  padding:18px;
-  text-align:center;
-  box-shadow:0 4px 18px rgba(111,85,173,.08);
-  position:relative;
-}
-.header h1{
-  margin:0;
-  color:var(--violeta-oscuro);
-  font-size:26px;
-  font-weight:900;
-}
-.header p{
-  margin:8px 0 0;
-  color:#6b6380;
-  font-weight:700;
-  font-size:14px;
-}
-.back-link{
-  position:absolute;
-  left:14px;
-  top:14px;
-  background:var(--violeta-suave);
-  color:var(--violeta-oscuro);
-  border:1px solid var(--borde);
-  border-radius:8px;
-  padding:8px 12px;
-  font-size:13px;
-  font-weight:800;
-  text-decoration:none;
-}
-/* ---- Zona de carga ---- */
-.upload-card{
-  margin-top:14px;
-  background:white;
-  border:1px solid var(--borde);
-  border-radius:14px;
-  padding:18px;
-  box-shadow:0 3px 14px rgba(41,35,68,.06);
-}
-.upload-zone{
-  border:2px dashed var(--violeta);
-  border-radius:12px;
-  background:var(--violeta-suave);
-  padding:26px 16px;
-  text-align:center;
-  cursor:pointer;
-  transition:background .15s;
-}
-.upload-zone:hover, .upload-zone.dragover{
-  background:#eae1f9;
-}
-.upload-zone .big-icon{font-size:34px}
-.upload-zone h2{
-  margin:8px 0 4px;
-  color:var(--violeta-oscuro);
-  font-size:17px;
-}
-.upload-zone p{
-  margin:0 0 12px;
-  color:#6b6380;
-  font-size:13px;
-}
-#fileInput{display:none}
-.file-status{
-  margin-top:10px;
-  font-size:13px;
-  color:#315d4e;
-  background:var(--verde);
-  border:1px solid var(--verde-borde);
-  border-radius:8px;
-  padding:8px 12px;
-  display:none;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  flex-wrap:wrap;
-}
-.file-status b{color:#1f4a3c}
-/* ---- Mantenimiento (mismo patrón del portal) ---- */
-.maintenance{
-  margin-top:12px;
-  padding:10px;
-  background:#fcfbff;
-  border:1px dashed #c7b7ea;
-  border-radius:10px;
-}
-.maintenance label{
-  display:block;
-  font-size:11px;
-  font-weight:900;
-  color:var(--violeta-oscuro);
-  margin-bottom:5px;
-  text-transform:uppercase;
-}
-.maintenance input{
-  width:100%;
-  padding:10px;
-  border:1px solid #d7d2e4;
-  border-radius:8px;
-  font-size:13px;
-}
-.maintenance input:focus{
-  outline:none;
-  border-color:var(--violeta);
-  box-shadow:0 0 0 3px rgba(138,111,197,.14);
-}
-.maintenance .actions{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:8px;
-}
-.btn-maintenance{
-  background:var(--verde);
-  color:#315d4e;
-  border:1px solid var(--verde-borde);
-  border-radius:8px;
-  padding:9px 13px;
-  font-weight:800;
-  cursor:pointer;
-  font-size:13px;
-}
-.btn{
-  border:none;
-  border-radius:8px;
-  padding:9px 13px;
-  font-weight:800;
-  cursor:pointer;
-  font-size:13px;
-}
-.btn-main{background:var(--violeta);color:white}
-.btn-soft{background:var(--rosado);color:#4a2330;border:1px solid var(--rosado-borde)}
-/* ---- Controles ---- */
-.controls{
-  margin-top:14px;
-  background:white;
-  border:1px solid var(--borde);
-  border-radius:14px;
-  padding:14px 16px;
-  display:flex;
-  gap:10px;
-  align-items:center;
-  flex-wrap:wrap;
-  box-shadow:0 3px 14px rgba(41,35,68,.06);
-}
-.controls input[type="text"]{
-  flex:1;
-  min-width:200px;
-  padding:10px;
-  border:1px solid #d7d2e4;
-  border-radius:8px;
-  font-size:14px;
-}
-.controls input[type="text"]:focus{
-  outline:none;
-  border-color:var(--violeta);
-  box-shadow:0 0 0 3px rgba(138,111,197,.14);
-}
-.count-pill{
-  background:var(--violeta-suave);
-  border:1px solid var(--borde);
-  color:var(--violeta-oscuro);
-  font-weight:800;
-  font-size:12px;
-  border-radius:999px;
-  padding:7px 12px;
-  white-space:nowrap;
-}
-/* ---- Tabla ---- */
-.table-card{
-  margin-top:14px;
-  background:white;
-  border:1px solid var(--borde);
-  border-radius:14px;
-  box-shadow:0 3px 14px rgba(41,35,68,.06);
-  overflow:hidden;
-}
-.table-scroll{
-  overflow-x:auto;
-  max-height:70vh;
-  overflow-y:auto;
-}
-table{
-  border-collapse:collapse;
-  width:100%;
-  font-size:13px;
-}
-thead th{
-  position:sticky;
-  top:0;
-  background:var(--violeta);
-  color:white;
-  text-align:left;
-  padding:10px 12px;
-  font-size:12px;
-  text-transform:uppercase;
-  letter-spacing:.3px;
-  cursor:pointer;
-  user-select:none;
-  white-space:nowrap;
-  z-index:2;
-}
-thead th .arrow{font-size:10px;opacity:.85;margin-left:4px}
-tbody td{
-  padding:9px 12px;
-  border-bottom:1px solid #efeaf8;
-  vertical-align:top;
-  max-width:340px;
-}
-tbody tr:nth-child(even){background:#faf8fe}
-tbody tr:hover{background:var(--violeta-suave)}
-td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-/* Columnas de códigos angostas (~3 caracteres) para aprovechar la pantalla */
-th.col-codigo, td.col-codigo{
-  width:3ch;
-  max-width:6ch;
-  white-space:normal;
-  word-break:break-all;
-  padding-left:6px;
-  padding-right:6px;
-}
-.empty-state{
-  padding:34px 16px;
-  text-align:center;
-  color:#7a728c;
-  font-size:14px;
-}
-.hidden{display:none}
-.footer{
-  margin-top:16px;
-  padding:10px;
-  text-align:center;
-  color:#7a728c;
-  font-size:12px;
-}
-.toast{
-  position:fixed;
-  bottom:18px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#2f2a45;
-  color:white;
-  padding:10px 16px;
-  border-radius:8px;
-  font-size:13px;
-  display:none;
-  z-index:99;
-}
-@media(max-width:860px){
-  .header h1{font-size:21px}
-  .back-link{position:static;display:inline-block;margin-bottom:8px}
-}
-/* ---- Impresión: solo la tabla ---- */
-@media print{
-  .upload-card, .controls, .back-link, .footer, .toast{display:none !important}
-  .table-scroll{max-height:none;overflow:visible}
-  .table-card{box-shadow:none;border:none}
-  thead th{position:static;background:#eee;color:#000}
-  body{background:white}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Servicios - Dra. Cecilia Gallardo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #5b8f3a 0%, #3d5a28 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .info-bar {
+            background: #f5f5f5;
+            padding: 15px 20px;
+            border-bottom: 2px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .info-bar .stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95em;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #5b8f3a;
+            font-size: 1.2em;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #5b8f3a;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .productos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .producto {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fafafa;
+            transition: all 0.3s ease;
+        }
+
+        .producto:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(91, 143, 58, 0.15);
+            border-color: #5b8f3a;
+        }
+
+        .producto-codigo {
+            display: inline-block;
+            background: #5b8f3a;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .producto-nombre {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #222;
+            margin: 10px 0;
+            line-height: 1.4;
+        }
+
+        .producto-info {
+            font-size: 0.9em;
+            color: #666;
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+
+        .producto-precio {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #5b8f3a;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+        }
+
+        .producto-iva {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .footer {
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+        }
+
+        .badge-iva {
+            display: inline-block;
+            background: #fff3cd;
+            color: #856404;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .info-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .productos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>🦷 Centro de Implantes Odontológicos</h1>
+            <p>Dra. Cecilia Gallardo</p>
+            <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.9;">Catálogo de Servicios</p>
+        </div>
 
-<div class="page">
+        <div class="info-bar">
+            <div class="stat">
+                <span>Total de servicios:</span>
+                <span class="stat-value" id="total-count">45</span>
+            </div>
+            <div class="stat">
+                <span>Tarifa:</span>
+                <span class="stat-value">0% IVA</span>
+            </div>
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="🔍 Buscar servicio (implante, corona, extracción...)">
+            </div>
+        </div>
 
-  <div class="header">
-    <a class="back-link" href="index.html">← Portal</a>
-    <h1>📦 Productos Facturados</h1>
-    <p>Consulta del catálogo de productos y servicios que se facturan en el consultorio</p>
-  </div>
+        <div class="content">
+            <div class="productos-grid" id="productos-container"></div>
+            <div id="no-results" class="no-results" style="display:none;">
+                <p>No se encontraron servicios que coincidan con tu búsqueda.</p>
+            </div>
+        </div>
 
-  <!-- Carga de Excel -->
-  <div class="upload-card">
-    <div class="upload-zone" id="uploadZone">
-      <div class="big-icon">📄</div>
-      <h2>Subir Excel de productos</h2>
-      <p>Arrastre y suelte aquí el archivo .xlsx, o use el botón</p>
-      <button class="btn btn-main" id="selectBtn" type="button">Seleccionar archivo</button>
+        <div class="footer">
+            <p>RUC: 0702133323001 | Régimen General | Tarifa de Servicios de Salud: 0%</p>
+            <p style="margin-top: 10px; font-size: 0.85em;">Catálogo generado para el Facturador Electrónico SRI</p>
+        </div>
     </div>
-    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
-    <div class="file-status" id="fileStatus">
-      <span id="fileInfo"></span>
-      <button class="btn btn-soft" onclick="clearData()">Quitar archivo</button>
-    </div>
-    <div class="maintenance">
-      <label>Mantenimiento - link de la hoja de Google del catálogo</label>
-      <input id="sheetLink" placeholder="Pegue aquí el link de la hoja de Google (sirve el link normal del navegador)">
-      <div class="actions">
-        <button class="btn-maintenance" onclick="guardarFuente()">Guardar link</button>
-        <button class="btn-maintenance" onclick="restaurarFuente()">Restaurar link fijo</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- Búsqueda / acciones -->
-  <div class="controls hidden" id="controlsRow">
-    <input type="text" id="searchBox" placeholder="Buscar por código, nombre, descripción o valor...">
-    <span class="count-pill" id="countPill"></span>
-    <button class="btn btn-main" onclick="window.print()">Imprimir</button>
-  </div>
+    <script>
+        const productos = [
+            {"codigo":"001","nombre":"ENDODONCIA","precio":"300.00","iva":"0","informacion_adicional":""},
+            {"codigo":"002","nombre":"ADITAMENTOS PROTÉSICOS PARA IMPLANTES","precio":"300.00","iva":"0","informacion_adicional":"TRASFER DE IMPRESIÓN, ANÁLOGO DE IMPLANTE Y PILAR PROTÉSICO"},
+            {"codigo":"003","nombre":"LABORATORIO DENTAL CORONONA","precio":"280.00","iva":"0","informacion_adicional":"ELABORACIÓN DE CORONA SOBRE IMPLANTE"},
+            {"codigo":"004","nombre":"HONORARIOS POR CORONA SOBRE IMPLANTE","precio":"250.00","iva":"0","informacion_adicional":"ELABORACIÓN CORONA SOBRE IMPLANTE, IMPRESIÓN Y PRUEBAS"},
+            {"codigo":"007","nombre":"TRATAMIENTO DENTAL","precio":"500.00","iva":"0","informacion_adicional":""},
+            {"codigo":"008","nombre":"PROTESIS REMOVIBLE 1 SOLA PIEZA","precio":"120.00","iva":"0","informacion_adicional":""},
+            {"codigo":"009","nombre":"CIRUGIA DE IMPLANTES","precio":"650.00","iva":"0","informacion_adicional":"ATENCIÓN QUIRÚRGICA Y CIRUGÍA DE IMPLANTES DENTALES"},
+            {"codigo":"011","nombre":"PROTESIS PROVICIONAL 1 PIEZA","precio":"75.00","iva":"0","informacion_adicional":"ELABORADA EN LAB"},
+            {"codigo":"012","nombre":"EXTRACCION DENTAL MOLAR","precio":"100.00","iva":"0","informacion_adicional":""},
+            {"codigo":"014","nombre":"CORONA SOBRE IMPLANTES","precio":"600.00","iva":"0","informacion_adicional":"INCLUYE ADITAMENTOS PROTÉSICOS"},
+            {"codigo":"015","nombre":"HONORARIOS CIRUGIA DE IMPLANTES","precio":"550.00","iva":"0","informacion_adicional":"ATENCIÓN Y EVALUACIÓN, CIRUGÍA DE IMPLANTES"},
+            {"codigo":"016","nombre":"IMPLANTE DENTAL","precio":"500.00","iva":"0","informacion_adicional":"INCLUYE CAPACITACIÓN"},
+            {"codigo":"017","nombre":"EXTRACCION","precio":"0.01","iva":"0","informacion_adicional":"EXTRACCIÓN DENTAL"},
+            {"codigo":"018","nombre":"IMPLANTE DENTAL Y CIRUGIA","precio":"550.00","iva":"0","informacion_adicional":"CIRUGIA DE IMPLANTE DENTAL, INCLUYE IMPLANTE DENTAL"},
+            {"codigo":"020","nombre":"MEMBRANA","precio":"100.00","iva":"0","informacion_adicional":"MEMBRANA DE COLAGENO CRITERIA PARA BARRERA DE INJERTO OSEO"},
+            {"codigo":"021","nombre":"BLANQUEAMIENTO DENTAL OPALESCENCE BOOST","precio":"150.00","iva":"0","informacion_adicional":""},
+            {"codigo":"022","nombre":"JERINJA DE GEL DESENSIBILIZANTE","precio":"18.00","iva":"0","informacion_adicional":"BASE DE FLUORURO Y NITRATO DE POTASIO"},
+            {"codigo":"023","nombre":"PROFILAXIS DENTAL, ULTRASONIDO","precio":"80.00","iva":"0","informacion_adicional":""},
+            {"codigo":"024","nombre":"ELABORACION CUBETA PERSONALIZADA BLANQUEAMIENTO","precio":"75.00","iva":"0","informacion_adicional":"CON TOMA IMPRESION + 2 JERINGAS OPALESCENCE"},
+            {"codigo":"025","nombre":"USO DE INSTRUMENTAL","precio":"250.00","iva":"0","informacion_adicional":"FRESAS, EYECTORES, TREFINA, GUANTES, CAMPOS ESTÉRILES"},
+            {"codigo":"026","nombre":"CORONAS DE ZIRCONIO CAD-CAM","precio":"700.00","iva":"0","informacion_adicional":"CORONAS DE ZIRCONIO SOBRE IMPLANTES"},
+            {"codigo":"027","nombre":"EXTRACCION CON COLGAJO VESTIBULAR","precio":"150.00","iva":"0","informacion_adicional":"EXTRACCIÓN CON COLGAJO Y ODONTOSECCIÓN CON SUTURAS"},
+            {"codigo":"028","nombre":"REGENERACION OSEA GUIADA","precio":"700.00","iva":"0","informacion_adicional":"INCLUYE HUESO Y MENBRANA DE COLÁGENO O PERICARDIO"},
+            {"codigo":"029","nombre":"PROTESIS FLEX 7 PIEZAS","precio":"400.00","iva":"0","informacion_adicional":""},
+            {"codigo":"030","nombre":"IMPLANTE DENTAL SIN CIRUGÍA","precio":"330.00","iva":"0","informacion_adicional":"IMPLANTE DENTAL"},
+            {"codigo":"031","nombre":"RETIRO DE RETENEDORES FIJOS","precio":"80.00","iva":"6","informacion_adicional":"RETENEDORES SUPERIORES E INFERIORES"},
+            {"codigo":"032","nombre":"SEDA ETHICON 3 -0 1/2 17MM","precio":"10.00","iva":"0","informacion_adicional":"ESTÉRIL"},
+            {"codigo":"033","nombre":"INCRUSTACIÓN E-MAX 2 SUPERFICIES","precio":"250.00","iva":"0","informacion_adicional":""},
+            {"codigo":"034","nombre":"EIKER FLEX","precio":"250.00","iva":"0","informacion_adicional":"PRÓTESIS REMOVIBLE EN ACRÍLICO FLEXIBLE"},
+            {"codigo":"035","nombre":"POSTE INTRARADICULAR COLADO","precio":"165.00","iva":"0","informacion_adicional":"TOMA DE IMPRESIÓN Y ELABORACIÓN DE POSTE COLADO"},
+            {"codigo":"036","nombre":"RESTAURACION CLASE I","precio":"75.00","iva":"0","informacion_adicional":"RESTAURACIÓN CLASE I"},
+            {"codigo":"037","nombre":"CORONA ZIRCONIO PIEZA DENTAL CAD CAM","precio":"500.00","iva":"0","informacion_adicional":"TALLADO SOBRE DIENTE NATURAL, INCLUIDO PROVISIONAL DE PMMA"},
+            {"codigo":"038","nombre":"POSTE DE FIBRA O TITANIO","precio":"100.00","iva":"0","informacion_adicional":"ELABORADO Y CEMENTADO EN UNA SOLA CITA"},
+            {"codigo":"039","nombre":"PEQUEÑA RESTAURACION POR COMPLETAR","precio":"35.00","iva":"0","informacion_adicional":"RESTAURACIONES QUE HAN PERDIDO MATERIAL"},
+            {"codigo":"040","nombre":"RESTURACIÓN COMPLEJA","precio":"100.00","iva":"0","informacion_adicional":"INCLUYE 3 SUPERFICIES O MÁS"},
+            {"codigo":"041","nombre":"SERVICIOS ODONTOLOGICOS","precio":"67.50","iva":"0","informacion_adicional":""},
+            {"codigo":"042","nombre":"CORONA METAL PORCELANA","precio":"350.00","iva":"0","informacion_adicional":"TALLADO, PRUEBA DE ESTRUCTURA, CEMENTADO DEFINITIVO"},
+            {"codigo":"044","nombre":"CORONA DE ZIRCONIO SOBRE IMPLANTE","precio":"750.00","iva":"0","informacion_adicional":"IMPRESIÓN DIGITAL, ANÁLOGO DIGITAL, ZIRCONIO ALTA RESISTENCIA"},
+            {"codigo":"050","nombre":"EXTRACCION PM SIMPLE","precio":"90.00","iva":"0","informacion_adicional":""},
+            {"codigo":"051","nombre":"PROVICIONAL SOBRE IMPLANTE","precio":"60.00","iva":"0","informacion_adicional":"PROVISIONAL SOBRE IMPLANTE"},
+            {"codigo":"052","nombre":"CONSULTA DE ORTODONCIA","precio":"80.00","iva":"0","informacion_adicional":""},
+            {"codigo":"053","nombre":"REPOSICION DE BRACKT POR UNIDAD","precio":"30.00","iva":"0","informacion_adicional":"REPOSICIÓN SIN MATERIAL DE ADHESIÓN"},
+            {"codigo":"054","nombre":"CORONA DE ZIRCONIO SOBRE DIENTE NATURAL","precio":"600.00","iva":"0","informacion_adicional":"INCLUYE PROVISIONALES DE PMMA"},
+            {"codigo":"060","nombre":"HONORARIOS PROFESIONALES","precio":"52.00","iva":"0","informacion_adicional":"SERVICIOS PRESTADOS"},
+            {"codigo":"099","nombre":"SERVICIOS Y ATENCIONES ODONTOLOGICAS","precio":"5750.00","iva":"0","informacion_adicional":""}
+        ];
 
-  <!-- Tabla -->
-  <div class="table-card hidden" id="tableCard">
-    <div class="table-scroll">
-      <table id="dataTable">
-        <thead id="tableHead"></thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
-  </div>
+        const container = document.getElementById('productos-container');
+        const searchInput = document.getElementById('search-input');
+        const noResults = document.getElementById('no-results');
 
-  <div class="empty-state" id="emptyState">
-    Aún no se ha cargado ningún archivo. Suba el Excel de productos para consultar el catálogo.
-  </div>
+        function renderProductos(items) {
+            container.innerHTML = '';
 
-  <div class="footer">
-    Portal interno de acceso rápido · Dra. Cecilia Gallardo
-  </div>
+            if (items.length === 0) {
+                container.style.display = 'none';
+                noResults.style.display = 'block';
+                return;
+            }
 
-</div>
+            container.style.display = 'grid';
+            noResults.style.display = 'none';
 
-<div class="toast" id="toast"></div>
+            items.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'producto';
 
-<script>
-const STORAGE_KEY = "portal_productos_data";
+                const codigo = String(p.codigo).padStart(3, '0');
+                const precio = parseFloat(p.precio).toFixed(2);
+                const iva = p.iva || '0';
 
-/*
-  FUENTE AUTOMÁTICA DEL EXCEL
-  Configurado para leer la hoja de Google Drive de la doctora (pestaña gid=1515368183).
-  Requisitos en Drive para que funcione:
-    1) El archivo debe ser Hoja de cálculo de Google (si es .xlsx subido,
-       usar Archivo → Guardar como hoja de cálculo de Google).
-    2) Compartir → Cualquier persona con el enlace → Lector.
-  Si en algún momento se usa "Publicar en la web" (Archivo → Compartir →
-  Publicar en la web → CSV), pegue aquí ese link en su lugar.
-*/
-const ARCHIVO_AUTOMATICO = "https://docs.google.com/spreadsheets/d/1erbUddBPGzWEiTkoaJOI76zYjBkD3s_8L3xEkkMbq6E/gviz/tq?tqx=out:csv&gid=1515368183";
+                let html = '<div class="producto-codigo">Cod: ' + codigo + '</div>';
+                html += '<div class="producto-nombre">' + p.nombre + '</div>';
+                if (p.informacion_adicional) {
+                    html += '<div class="producto-info">' + p.informacion_adicional + '</div>';
+                }
+                html += '<div class="producto-precio">$' + precio + '</div>';
+                html += '<div class="badge-iva">Tarifa ' + iva + '% IVA</div>';
 
-/* ---- Mantenimiento del link (mismo patrón del portal) ----
-   El link fijo de arriba viene cargado por defecto. Si la hoja cambia,
-   pegue el link nuevo en Mantenimiento y presione Guardar link:
-   se usará ese link guardado localmente, sin tocar este archivo.
-*/
-const SHEET_KEY = "portal_productos_sheet";
+                div.innerHTML = html;
+                container.appendChild(div);
+            });
+        }
 
-function normalizarLinkHoja(url){
-  url = url.trim();
-  if(!url) return "";
-  // Acepta el link normal del navegador (…/spreadsheets/d/ID/edit…gid=N)
-  // y lo convierte al formato de lectura CSV que la página necesita
-  const m = url.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9\-_]+)/);
-  if(m){
-    const id = m[1];
-    const g = url.match(/[#?&]gid=(\d+)/);
-    const gid = g ? g[1] : "0";
-    return "https://docs.google.com/spreadsheets/d/" + id + "/gviz/tq?tqx=out:csv&gid=" + gid;
-  }
-  return url; // otros links (publicado en la web, archivo del repositorio, etc.)
-}
+        searchInput.addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            const filtered = productos.filter(function(p) {
+                return p.nombre.toLowerCase().indexOf(term) >= 0 ||
+                       p.codigo.indexOf(term) >= 0 ||
+                       (p.informacion_adicional || '').toLowerCase().indexOf(term) >= 0;
+            });
+            renderProductos(filtered);
+        });
 
-function getFuente(){
-  const guardado = localStorage.getItem(SHEET_KEY);
-  return (guardado && guardado.trim()) || ARCHIVO_AUTOMATICO;
-}
-
-function guardarFuente(){
-  const input = document.getElementById("sheetLink");
-  const norm = normalizarLinkHoja(input.value);
-  if(!norm){
-    showToast("Pegue primero el link de la hoja");
-    return;
-  }
-  localStorage.setItem(SHEET_KEY, norm);
-  input.value = norm;
-  localStorage.removeItem(STORAGE_KEY); // descarta la copia anterior y recarga
-  showToast("Link guardado, cargando catálogo...");
-  cargarArchivoAutomatico();
-}
-
-function restaurarFuente(){
-  if(!confirm("¿Desea volver al link fijo del catálogo?")) return;
-  localStorage.removeItem(SHEET_KEY);
-  localStorage.removeItem(STORAGE_KEY);
-  document.getElementById("sheetLink").value = ARCHIVO_AUTOMATICO;
-  showToast("Se restauró el link fijo");
-  cargarArchivoAutomatico();
-}
-
-let headers = [];
-let rows = [];          // celdas como TEXTO FORMATEADO, tal cual se ven en Excel
-let filteredRows = [];
-let sortCol = -1;
-let sortAsc = true;
-
-function showToast(message){
-  const toast = document.getElementById("toast");
-  toast.innerText = message;
-  toast.style.display = "block";
-  setTimeout(()=>{ toast.style.display = "none"; }, 2300);
-}
-
-/* ---------- Carga del archivo (botón y arrastrar/soltar) ---------- */
-
-const fileInput = document.getElementById("fileInput");
-const uploadZone = document.getElementById("uploadZone");
-const selectBtn = document.getElementById("selectBtn");
-
-selectBtn.addEventListener("click", e=>{
-  e.stopPropagation();
-  fileInput.click();
-});
-uploadZone.addEventListener("click", ()=> fileInput.click());
-
-fileInput.addEventListener("change", e=>{
-  if(e.target.files.length) readFile(e.target.files[0]);
-});
-
-["dragover","dragenter"].forEach(ev=>{
-  uploadZone.addEventListener(ev, e=>{
-    e.preventDefault();
-    uploadZone.classList.add("dragover");
-  });
-});
-["dragleave","drop"].forEach(ev=>{
-  uploadZone.addEventListener(ev, e=>{
-    e.preventDefault();
-    uploadZone.classList.remove("dragover");
-  });
-});
-uploadZone.addEventListener("drop", e=>{
-  if(e.dataTransfer.files.length) readFile(e.dataTransfer.files[0]);
-});
-
-/*
-  parseWorkbook: convierte los bytes del Excel/CSV en {headers, rows}.
-  raw:false hace que SheetJS devuelva el TEXTO FORMATEADO de cada celda
-  (propiedad .w), respetando el formato original del Excel:
-  decimales, símbolos de moneda, porcentajes, fechas, ceros a la izquierda, etc.
-*/
-function parseWorkbook(arrayBuffer){
-  const wb = XLSX.read(new Uint8Array(arrayBuffer), {type:"array"});
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const data = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, defval:""});
-  if(!data.length) return null;
-  const headerRowIdx = data.findIndex(r => r.some(c => String(c).trim() !== ""));
-  if(headerRowIdx === -1) return null;
-  const hdrs = data[headerRowIdx].map(h => String(h).trim() || "(sin nombre)");
-  const rws = data.slice(headerRowIdx + 1)
-    .filter(r => r.some(c => String(c).trim() !== ""))
-    .map(r => hdrs.map((_, i) => r[i] !== undefined ? String(r[i]) : ""));
-  return {headers: hdrs, rows: rws};
-}
-
-function savePayload(payload){
-  try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  }catch(err){
-    showToast("Archivo cargado (muy grande para guardarse en este dispositivo)");
-  }
-}
-
-function readFile(file){
-  const reader = new FileReader();
-  reader.onload = e=>{
-    try{
-      const parsed = parseWorkbook(e.target.result);
-      if(!parsed){
-        showToast("No se encontraron datos en el archivo");
-        return;
-      }
-      const payload = {
-        fileName: file.name,
-        uploadedAt: new Date().toLocaleString("es-EC"),
-        manual: true,   // la carga manual tiene prioridad en este dispositivo
-        headers: parsed.headers,
-        rows: parsed.rows
-      };
-      savePayload(payload);
-      renderAll(payload);
-      showToast("Archivo cargado correctamente");
-    }catch(err){
-      console.error(err);
-      showToast("No se pudo leer el archivo. Verifique que sea un Excel válido.");
-    }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-/* Carga automática desde la hoja de Google (link fijo o el guardado en Mantenimiento) */
-async function cargarArchivoAutomatico(){
-  const fuente = getFuente();
-  if(!fuente) return false;
-  try{
-    const resp = await fetch(fuente, {cache:"no-store"});
-    if(!resp.ok) return false;
-    const parsed = parseWorkbook(await resp.arrayBuffer());
-    if(!parsed) return false;
-    const payload = {
-      fileName: "Catálogo desde Google Drive (se actualiza automáticamente)",
-      uploadedAt: new Date().toLocaleString("es-EC"),
-      manual: false,
-      headers: parsed.headers,
-      rows: parsed.rows
-    };
-    savePayload(payload);
-    renderAll(payload);
-    return true;
-  }catch(err){
-    console.error("Carga automática no disponible:", err);
-    return false;
-  }
-}
-
-function clearData(){
-  if(!confirm("¿Desea quitar el archivo cargado de este dispositivo?")) return;
-  localStorage.removeItem(STORAGE_KEY);
-  headers = []; rows = []; filteredRows = [];
-  document.getElementById("fileStatus").style.display = "none";
-  document.getElementById("controlsRow").classList.add("hidden");
-  document.getElementById("tableCard").classList.add("hidden");
-  document.getElementById("emptyState").classList.remove("hidden");
-  document.getElementById("searchBox").value = "";
-  fileInput.value = "";
-  showToast("Archivo eliminado");
-  // Si existe un catálogo automático del sitio, se vuelve a mostrar
-  cargarArchivoAutomatico();
-}
-
-/* ---------- Render ---------- */
-
-function renderAll(payload){
-  headers = payload.headers;
-  rows = payload.rows;
-  sortCol = -1;
-  sortAsc = true;
-
-  document.getElementById("fileStatus").style.display = "flex";
-  document.getElementById("fileInfo").innerHTML =
-    "Archivo cargado: <b>" + escapeHtml(payload.fileName) + "</b> · " +
-    payload.uploadedAt + " · " + rows.length + " productos";
-
-  document.getElementById("emptyState").classList.add("hidden");
-  document.getElementById("controlsRow").classList.remove("hidden");
-  document.getElementById("tableCard").classList.remove("hidden");
-
-  applyFilter();
-}
-
-function toNumber(v){
-  if(typeof v === "number") return v;
-  let s = String(v).trim();
-  if(s === "") return null;
-  s = s.replace(/[^0-9.,\-]/g, "");
-  if(s === "" || s === "-") return null;
-  const hasComma = s.includes(",");
-  const hasDot = s.includes(".");
-  if(hasComma && hasDot){
-    // Formato ecuatoriano: punto = miles, coma = decimal ($ 5.750,00 → 5750.00)
-    s = s.replace(/\./g, "").replace(",", ".");
-  }else if(hasComma){
-    // Solo coma: es el decimal ($ 300,00 → 300.00)
-    s = s.replace(",", ".");
-  }
-  const n = parseFloat(s);
-  return isNaN(n) ? null : n;
-}
-
-function applyFilter(){
-  const q = document.getElementById("searchBox").value.trim().toLowerCase();
-  filteredRows = !q ? rows.slice() :
-    rows.filter(r => r.some(c => String(c).toLowerCase().includes(q)));
-
-  if(sortCol !== -1){
-    // La columna se ordena numéricamente si todas sus celdas con contenido son números
-    const colIsNum = filteredRows.length > 0 && filteredRows.every(r => {
-      const s = String(r[sortCol]).trim();
-      return s === "" || toNumber(s) !== null;
-    });
-    filteredRows.sort((a,b)=>{
-      let va = a[sortCol], vb = b[sortCol];
-      if(colIsNum){
-        va = toNumber(va); vb = toNumber(vb);
-        va = va === null ? -Infinity : va;
-        vb = vb === null ? -Infinity : vb;
-        return sortAsc ? va - vb : vb - va;
-      }
-      return sortAsc
-        ? String(va).localeCompare(String(vb), "es")
-        : String(vb).localeCompare(String(va), "es");
-    });
-  }
-  renderTable();
-}
-
-function renderTable(){
-  const head = document.getElementById("tableHead");
-  const body = document.getElementById("tableBody");
-
-  // Columnas angostas: Código Principal y Código Auxiliar
-  const esCodigo = headers.map(h => {
-    const n = String(h).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    return n.includes("codigo") && (n.includes("principal") || n.includes("auxiliar"));
-  });
-
-  // Columnas numéricas (solo para alinear a la derecha; el texto no se modifica)
-  const numCols = headers.map((_, i) =>
-    rows.length > 0 && rows.every(r => {
-      const s = String(r[i]).trim();
-      return s === "" || toNumber(s) !== null;
-    }) && rows.some(r => String(r[i]).trim() !== "")
-  );
-
-  let hHtml = "<tr>";
-  headers.forEach((h,i)=>{
-    let arrow = "";
-    if(i === sortCol) arrow = '<span class="arrow">' + (sortAsc ? "▲" : "▼") + '</span>';
-    hHtml += '<th' + (esCodigo[i] ? ' class="col-codigo"' : '') + ' onclick="sortBy(' + i + ')">' + escapeHtml(h) + arrow + "</th>";
-  });
-  hHtml += "</tr>";
-  head.innerHTML = hHtml;
-
-  let bHtml = "";
-  filteredRows.forEach(r=>{
-    bHtml += "<tr>";
-    r.forEach((c,i)=>{
-      // Se muestra el texto EXACTO del Excel, sin reformatear
-      const clases = [];
-      if(numCols[i] && !esCodigo[i]) clases.push("num");
-      if(esCodigo[i]) clases.push("col-codigo");
-      bHtml += '<td' + (clases.length ? ' class="' + clases.join(" ") + '"' : '') + '>' + escapeHtml(String(c)) + "</td>";
-    });
-    bHtml += "</tr>";
-  });
-  body.innerHTML = bHtml || '<tr><td colspan="' + headers.length + '" class="empty-state">No hay productos que coincidan con la búsqueda.</td></tr>';
-
-  document.getElementById("countPill").innerText =
-    filteredRows.length + " de " + rows.length + " productos";
-}
-
-function sortBy(i){
-  if(sortCol === i){
-    sortAsc = !sortAsc;
-  }else{
-    sortCol = i;
-    sortAsc = true;
-  }
-  applyFilter();
-}
-
-function escapeHtml(s){
-  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-
-document.getElementById("searchBox").addEventListener("input", applyFilter);
-
-/* ---------- Al abrir ----------
-   1) Si hay un Excel subido manualmente en este dispositivo, ese manda.
-   2) Si no, se carga el catálogo automático del sitio (repositorio o link publicado).
-   3) Si no hay internet, se usa la última copia guardada en el dispositivo.
-*/
-(async function init(){
-  // Mostrar en Mantenimiento el link en uso (guardado o fijo)
-  document.getElementById("sheetLink").value = getFuente();
-
-  let saved = null;
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){
-      const p = JSON.parse(raw);
-      if(p.headers && p.rows) saved = p;
-    }
-  }catch(err){ console.error(err); }
-
-  if(saved && saved.manual){
-    renderAll(saved);
-    return;
-  }
-  const ok = await cargarArchivoAutomatico();
-  if(!ok && saved){
-    renderAll(saved);
-  }
-})();
-</script>
-
+        renderProductos(productos);
+    </script>
 </body>
 </html>
+
