@@ -13,145 +13,121 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            background: #f5f5f5;
             padding: 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             overflow: hidden;
         }
 
         .header {
             background: linear-gradient(135deg, #5b8f3a 0%, #3d5a28 100%);
             color: white;
-            padding: 40px 20px;
+            padding: 30px 20px;
             text-align: center;
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            font-size: 2em;
+            margin-bottom: 5px;
         }
 
         .header p {
-            font-size: 1.1em;
+            font-size: 1em;
             opacity: 0.95;
         }
 
-        .info-bar {
-            background: #f5f5f5;
+        .controls {
+            background: #f9f9f9;
             padding: 15px 20px;
-            border-bottom: 2px solid #eee;
+            border-bottom: 1px solid #eee;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
             gap: 20px;
-        }
-
-        .info-bar .stat {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.95em;
-        }
-
-        .stat-value {
-            font-weight: 700;
-            color: #5b8f3a;
-            font-size: 1.2em;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 200px;
+            flex-wrap: wrap;
         }
 
         .search-box input {
-            width: 100%;
             padding: 10px 15px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 1em;
-            transition: border-color 0.3s;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95em;
+            flex: 1;
+            min-width: 250px;
         }
 
         .search-box input:focus {
             outline: none;
             border-color: #5b8f3a;
+            box-shadow: 0 0 4px rgba(91, 143, 58, 0.2);
         }
 
-        .content {
-            padding: 30px 20px;
-        }
-
-        .productos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-        }
-
-        .producto {
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 20px;
-            background: #fafafa;
-            transition: all 0.3s ease;
-        }
-
-        .producto:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(91, 143, 58, 0.15);
-            border-color: #5b8f3a;
-        }
-
-        .producto-codigo {
-            display: inline-block;
-            background: #5b8f3a;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .producto-nombre {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #222;
-            margin: 10px 0;
-            line-height: 1.4;
-        }
-
-        .producto-info {
+        .stats {
             font-size: 0.9em;
             color: #666;
-            margin: 8px 0;
-            line-height: 1.5;
+            font-weight: 500;
         }
 
-        .producto-precio {
-            font-size: 1.4em;
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        thead {
+            background: #f0f0f0;
+            border-bottom: 2px solid #5b8f3a;
+        }
+
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 700;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95em;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .codigo {
+            background: #f0f7f0;
+            font-weight: 600;
+            color: #5b8f3a;
+            width: 80px;
+            text-align: center;
+        }
+
+        .nombre {
+            color: #333;
+            font-weight: 500;
+            max-width: 400px;
+        }
+
+        .valor {
             font-weight: 700;
             color: #5b8f3a;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid #eee;
-        }
-
-        .producto-iva {
-            font-size: 0.85em;
-            color: #999;
-            margin-top: 8px;
-            font-weight: 500;
+            width: 100px;
+            text-align: right;
         }
 
         .no-results {
@@ -162,36 +138,44 @@
 
         .footer {
             background: #f5f5f5;
-            padding: 20px;
+            padding: 15px 20px;
             text-align: center;
             color: #666;
-            font-size: 0.9em;
+            font-size: 0.85em;
             border-top: 1px solid #eee;
         }
 
-        .badge-iva {
-            display: inline-block;
-            background: #fff3cd;
-            color: #856404;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 0.8em;
-            font-weight: 600;
-            margin-top: 8px;
+        .info-bar {
+            background: #e8f5e9;
+            border-left: 4px solid #5b8f3a;
+            padding: 12px 15px;
+            margin: 20px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #2e7d32;
         }
 
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .info-bar {
+            .controls {
                 flex-direction: column;
                 align-items: stretch;
             }
 
-            .productos-grid {
-                grid-template-columns: 1fr;
+            .search-box input {
+                min-width: 100%;
+            }
+
+            .table-wrapper {
+                padding: 10px;
+            }
+
+            th, td {
+                padding: 8px 10px;
+                font-size: 0.85em;
+            }
+
+            .nombre {
+                max-width: 150px;
             }
         }
     </style>
@@ -200,133 +184,137 @@
     <div class="container">
         <div class="header">
             <h1>🦷 Centro de Implantes Odontológicos</h1>
-            <p>Dra. Cecilia Gallardo</p>
-            <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.9;">Catálogo de Servicios</p>
+            <p>Dra. Cecilia Gallardo - Catálogo de Servicios</p>
         </div>
 
         <div class="info-bar">
-            <div class="stat">
-                <span>Total de servicios:</span>
-                <span class="stat-value" id="total-count">45</span>
-            </div>
-            <div class="stat">
-                <span>Tarifa:</span>
-                <span class="stat-value">0% IVA</span>
-            </div>
+            <strong>Instrucciones:</strong> Revisa los productos abajo. Si ves errores de escritura, avísale a Alexandra para corregir.
+        </div>
+
+        <div class="controls">
             <div class="search-box">
-                <input type="text" id="search-input" placeholder="🔍 Buscar servicio (implante, corona, extracción...)">
+                <input type="text" id="search-input" placeholder="🔍 Buscar producto...">
+            </div>
+            <div class="stats">
+                Mostrando <span id="filtered-count">45</span> de <span id="total-count">45</span> servicios
             </div>
         </div>
 
-        <div class="content">
-            <div class="productos-grid" id="productos-container"></div>
+        <div class="table-wrapper">
+            <table id="productos-table">
+                <thead>
+                    <tr>
+                        <th class="codigo">Código</th>
+                        <th class="nombre">Nombre del Servicio</th>
+                        <th class="valor">Valor ($)</th>
+                    </tr>
+                </thead>
+                <tbody id="productos-body">
+                </tbody>
+            </table>
             <div id="no-results" class="no-results" style="display:none;">
-                <p>No se encontraron servicios que coincidan con tu búsqueda.</p>
+                No se encontraron servicios que coincidan con tu búsqueda.
             </div>
         </div>
 
         <div class="footer">
-            <p>RUC: 0702133323001 | Régimen General | Tarifa de Servicios de Salud: 0%</p>
-            <p style="margin-top: 10px; font-size: 0.85em;">Catálogo generado para el Facturador Electrónico SRI</p>
+            <p>RUC: 0702133323001 | Régimen General | Tarifa: 0% IVA (Servicios de Salud)</p>
+            <p style="margin-top: 8px; font-size: 0.8em;">Total de 45 servicios disponibles</p>
         </div>
     </div>
 
     <script>
         const productos = [
-            {"codigo":"001","nombre":"ENDODONCIA","precio":"300.00","iva":"0","informacion_adicional":""},
-            {"codigo":"002","nombre":"ADITAMENTOS PROTÉSICOS PARA IMPLANTES","precio":"300.00","iva":"0","informacion_adicional":"TRASFER DE IMPRESIÓN, ANÁLOGO DE IMPLANTE Y PILAR PROTÉSICO"},
-            {"codigo":"003","nombre":"LABORATORIO DENTAL CORONONA","precio":"280.00","iva":"0","informacion_adicional":"ELABORACIÓN DE CORONA SOBRE IMPLANTE"},
-            {"codigo":"004","nombre":"HONORARIOS POR CORONA SOBRE IMPLANTE","precio":"250.00","iva":"0","informacion_adicional":"ELABORACIÓN CORONA SOBRE IMPLANTE, IMPRESIÓN Y PRUEBAS"},
-            {"codigo":"007","nombre":"TRATAMIENTO DENTAL","precio":"500.00","iva":"0","informacion_adicional":""},
-            {"codigo":"008","nombre":"PROTESIS REMOVIBLE 1 SOLA PIEZA","precio":"120.00","iva":"0","informacion_adicional":""},
-            {"codigo":"009","nombre":"CIRUGIA DE IMPLANTES","precio":"650.00","iva":"0","informacion_adicional":"ATENCIÓN QUIRÚRGICA Y CIRUGÍA DE IMPLANTES DENTALES"},
-            {"codigo":"011","nombre":"PROTESIS PROVICIONAL 1 PIEZA","precio":"75.00","iva":"0","informacion_adicional":"ELABORADA EN LAB"},
-            {"codigo":"012","nombre":"EXTRACCION DENTAL MOLAR","precio":"100.00","iva":"0","informacion_adicional":""},
-            {"codigo":"014","nombre":"CORONA SOBRE IMPLANTES","precio":"600.00","iva":"0","informacion_adicional":"INCLUYE ADITAMENTOS PROTÉSICOS"},
-            {"codigo":"015","nombre":"HONORARIOS CIRUGIA DE IMPLANTES","precio":"550.00","iva":"0","informacion_adicional":"ATENCIÓN Y EVALUACIÓN, CIRUGÍA DE IMPLANTES"},
-            {"codigo":"016","nombre":"IMPLANTE DENTAL","precio":"500.00","iva":"0","informacion_adicional":"INCLUYE CAPACITACIÓN"},
-            {"codigo":"017","nombre":"EXTRACCION","precio":"0.01","iva":"0","informacion_adicional":"EXTRACCIÓN DENTAL"},
-            {"codigo":"018","nombre":"IMPLANTE DENTAL Y CIRUGIA","precio":"550.00","iva":"0","informacion_adicional":"CIRUGIA DE IMPLANTE DENTAL, INCLUYE IMPLANTE DENTAL"},
-            {"codigo":"020","nombre":"MEMBRANA","precio":"100.00","iva":"0","informacion_adicional":"MEMBRANA DE COLAGENO CRITERIA PARA BARRERA DE INJERTO OSEO"},
-            {"codigo":"021","nombre":"BLANQUEAMIENTO DENTAL OPALESCENCE BOOST","precio":"150.00","iva":"0","informacion_adicional":""},
-            {"codigo":"022","nombre":"JERINJA DE GEL DESENSIBILIZANTE","precio":"18.00","iva":"0","informacion_adicional":"BASE DE FLUORURO Y NITRATO DE POTASIO"},
-            {"codigo":"023","nombre":"PROFILAXIS DENTAL, ULTRASONIDO","precio":"80.00","iva":"0","informacion_adicional":""},
-            {"codigo":"024","nombre":"ELABORACION CUBETA PERSONALIZADA BLANQUEAMIENTO","precio":"75.00","iva":"0","informacion_adicional":"CON TOMA IMPRESION + 2 JERINGAS OPALESCENCE"},
-            {"codigo":"025","nombre":"USO DE INSTRUMENTAL","precio":"250.00","iva":"0","informacion_adicional":"FRESAS, EYECTORES, TREFINA, GUANTES, CAMPOS ESTÉRILES"},
-            {"codigo":"026","nombre":"CORONAS DE ZIRCONIO CAD-CAM","precio":"700.00","iva":"0","informacion_adicional":"CORONAS DE ZIRCONIO SOBRE IMPLANTES"},
-            {"codigo":"027","nombre":"EXTRACCION CON COLGAJO VESTIBULAR","precio":"150.00","iva":"0","informacion_adicional":"EXTRACCIÓN CON COLGAJO Y ODONTOSECCIÓN CON SUTURAS"},
-            {"codigo":"028","nombre":"REGENERACION OSEA GUIADA","precio":"700.00","iva":"0","informacion_adicional":"INCLUYE HUESO Y MENBRANA DE COLÁGENO O PERICARDIO"},
-            {"codigo":"029","nombre":"PROTESIS FLEX 7 PIEZAS","precio":"400.00","iva":"0","informacion_adicional":""},
-            {"codigo":"030","nombre":"IMPLANTE DENTAL SIN CIRUGÍA","precio":"330.00","iva":"0","informacion_adicional":"IMPLANTE DENTAL"},
-            {"codigo":"031","nombre":"RETIRO DE RETENEDORES FIJOS","precio":"80.00","iva":"6","informacion_adicional":"RETENEDORES SUPERIORES E INFERIORES"},
-            {"codigo":"032","nombre":"SEDA ETHICON 3 -0 1/2 17MM","precio":"10.00","iva":"0","informacion_adicional":"ESTÉRIL"},
-            {"codigo":"033","nombre":"INCRUSTACIÓN E-MAX 2 SUPERFICIES","precio":"250.00","iva":"0","informacion_adicional":""},
-            {"codigo":"034","nombre":"EIKER FLEX","precio":"250.00","iva":"0","informacion_adicional":"PRÓTESIS REMOVIBLE EN ACRÍLICO FLEXIBLE"},
-            {"codigo":"035","nombre":"POSTE INTRARADICULAR COLADO","precio":"165.00","iva":"0","informacion_adicional":"TOMA DE IMPRESIÓN Y ELABORACIÓN DE POSTE COLADO"},
-            {"codigo":"036","nombre":"RESTAURACION CLASE I","precio":"75.00","iva":"0","informacion_adicional":"RESTAURACIÓN CLASE I"},
-            {"codigo":"037","nombre":"CORONA ZIRCONIO PIEZA DENTAL CAD CAM","precio":"500.00","iva":"0","informacion_adicional":"TALLADO SOBRE DIENTE NATURAL, INCLUIDO PROVISIONAL DE PMMA"},
-            {"codigo":"038","nombre":"POSTE DE FIBRA O TITANIO","precio":"100.00","iva":"0","informacion_adicional":"ELABORADO Y CEMENTADO EN UNA SOLA CITA"},
-            {"codigo":"039","nombre":"PEQUEÑA RESTAURACION POR COMPLETAR","precio":"35.00","iva":"0","informacion_adicional":"RESTAURACIONES QUE HAN PERDIDO MATERIAL"},
-            {"codigo":"040","nombre":"RESTURACIÓN COMPLEJA","precio":"100.00","iva":"0","informacion_adicional":"INCLUYE 3 SUPERFICIES O MÁS"},
-            {"codigo":"041","nombre":"SERVICIOS ODONTOLOGICOS","precio":"67.50","iva":"0","informacion_adicional":""},
-            {"codigo":"042","nombre":"CORONA METAL PORCELANA","precio":"350.00","iva":"0","informacion_adicional":"TALLADO, PRUEBA DE ESTRUCTURA, CEMENTADO DEFINITIVO"},
-            {"codigo":"044","nombre":"CORONA DE ZIRCONIO SOBRE IMPLANTE","precio":"750.00","iva":"0","informacion_adicional":"IMPRESIÓN DIGITAL, ANÁLOGO DIGITAL, ZIRCONIO ALTA RESISTENCIA"},
-            {"codigo":"050","nombre":"EXTRACCION PM SIMPLE","precio":"90.00","iva":"0","informacion_adicional":""},
-            {"codigo":"051","nombre":"PROVICIONAL SOBRE IMPLANTE","precio":"60.00","iva":"0","informacion_adicional":"PROVISIONAL SOBRE IMPLANTE"},
-            {"codigo":"052","nombre":"CONSULTA DE ORTODONCIA","precio":"80.00","iva":"0","informacion_adicional":""},
-            {"codigo":"053","nombre":"REPOSICION DE BRACKT POR UNIDAD","precio":"30.00","iva":"0","informacion_adicional":"REPOSICIÓN SIN MATERIAL DE ADHESIÓN"},
-            {"codigo":"054","nombre":"CORONA DE ZIRCONIO SOBRE DIENTE NATURAL","precio":"600.00","iva":"0","informacion_adicional":"INCLUYE PROVISIONALES DE PMMA"},
-            {"codigo":"060","nombre":"HONORARIOS PROFESIONALES","precio":"52.00","iva":"0","informacion_adicional":"SERVICIOS PRESTADOS"},
-            {"codigo":"099","nombre":"SERVICIOS Y ATENCIONES ODONTOLOGICAS","precio":"5750.00","iva":"0","informacion_adicional":""}
+            {"codigo":"001","nombre":"ENDODONCIA","precio":"300.00"},
+            {"codigo":"002","nombre":"ADITAMENTOS PROTÉSICOS PARA IMPLANTES","precio":"300.00"},
+            {"codigo":"003","nombre":"LABORATORIO DENTAL CORONA","precio":"280.00"},
+            {"codigo":"004","nombre":"HONORARIOS POR CORONA SOBRE IMPLANTE","precio":"250.00"},
+            {"codigo":"007","nombre":"TRATAMIENTO DENTAL","precio":"500.00"},
+            {"codigo":"008","nombre":"PRÓTESIS REMOVIBLE 1 PIEZA","precio":"120.00"},
+            {"codigo":"009","nombre":"CIRUGÍA DE IMPLANTES","precio":"650.00"},
+            {"codigo":"011","nombre":"PRÓTESIS PROVISIONAL 1 PIEZA","precio":"75.00"},
+            {"codigo":"012","nombre":"EXTRACCIÓN DENTAL MOLAR","precio":"100.00"},
+            {"codigo":"014","nombre":"CORONA SOBRE IMPLANTES","precio":"600.00"},
+            {"codigo":"015","nombre":"HONORARIOS CIRUGÍA DE IMPLANTES","precio":"550.00"},
+            {"codigo":"016","nombre":"IMPLANTE DENTAL","precio":"500.00"},
+            {"codigo":"017","nombre":"EXTRACCIÓN","precio":"0.01"},
+            {"codigo":"018","nombre":"IMPLANTE DENTAL Y CIRUGÍA","precio":"550.00"},
+            {"codigo":"020","nombre":"MEMBRANA","precio":"100.00"},
+            {"codigo":"021","nombre":"BLANQUEAMIENTO DENTAL OPALESCENCE BOOST","precio":"150.00"},
+            {"codigo":"022","nombre":"JERINGA DE GEL DESENSIBILIZANTE","precio":"18.00"},
+            {"codigo":"023","nombre":"PROFILAXIS DENTAL ULTRASONIDO","precio":"80.00"},
+            {"codigo":"024","nombre":"ELABORACIÓN CUBETA PERSONALIZADA BLANQUEAMIENTO","precio":"75.00"},
+            {"codigo":"025","nombre":"USO DE INSTRUMENTAL","precio":"250.00"},
+            {"codigo":"026","nombre":"CORONAS DE ZIRCONIO CAD-CAM","precio":"700.00"},
+            {"codigo":"027","nombre":"EXTRACCIÓN CON COLGAJO VESTIBULAR","precio":"150.00"},
+            {"codigo":"028","nombre":"REGENERACIÓN ÓSEA GUIADA","precio":"700.00"},
+            {"codigo":"029","nombre":"PRÓTESIS FLEX 7 PIEZAS","precio":"400.00"},
+            {"codigo":"030","nombre":"IMPLANTE DENTAL SIN CIRUGÍA","precio":"330.00"},
+            {"codigo":"031","nombre":"RETIRO DE RETENEDORES FIJOS","precio":"80.00"},
+            {"codigo":"032","nombre":"SEDA ETHICON 3-0 1/2 17MM","precio":"10.00"},
+            {"codigo":"033","nombre":"INCRUSTACIÓN E-MAX 2 SUPERFICIES","precio":"250.00"},
+            {"codigo":"034","nombre":"EIKER FLEX","precio":"250.00"},
+            {"codigo":"035","nombre":"POSTE INTRARADICULAR COLADO","precio":"165.00"},
+            {"codigo":"036","nombre":"RESTAURACIÓN CLASE I","precio":"75.00"},
+            {"codigo":"037","nombre":"CORONA ZIRCONIO PIEZA DENTAL CAD-CAM","precio":"500.00"},
+            {"codigo":"038","nombre":"POSTE DE FIBRA O TITANIO","precio":"100.00"},
+            {"codigo":"039","nombre":"PEQUEÑA RESTAURACIÓN POR COMPLETAR","precio":"35.00"},
+            {"codigo":"040","nombre":"RESTAURACIÓN COMPLEJA","precio":"100.00"},
+            {"codigo":"041","nombre":"SERVICIOS ODONTOLÓGICOS","precio":"67.50"},
+            {"codigo":"042","nombre":"CORONA METAL PORCELANA","precio":"350.00"},
+            {"codigo":"044","nombre":"CORONA DE ZIRCONIO SOBRE IMPLANTE","precio":"750.00"},
+            {"codigo":"050","nombre":"EXTRACCIÓN PM SIMPLE","precio":"90.00"},
+            {"codigo":"051","nombre":"PROVISIONAL SOBRE IMPLANTE","precio":"60.00"},
+            {"codigo":"052","nombre":"CONSULTA DE ORTODONCIA","precio":"80.00"},
+            {"codigo":"053","nombre":"REPOSICIÓN DE BRACKET POR UNIDAD","precio":"30.00"},
+            {"codigo":"054","nombre":"CORONA DE ZIRCONIO SOBRE DIENTE NATURAL","precio":"600.00"},
+            {"codigo":"060","nombre":"HONORARIOS PROFESIONALES","precio":"52.00"},
+            {"codigo":"099","nombre":"SERVICIOS Y ATENCIONES ODONTOLÓGICAS","precio":"5750.00"}
         ];
 
-        const container = document.getElementById('productos-container');
+        const tbody = document.getElementById('productos-body');
         const searchInput = document.getElementById('search-input');
+        const filteredCount = document.getElementById('filtered-count');
+        const totalCount = document.getElementById('total-count');
         const noResults = document.getElementById('no-results');
+        const table = document.getElementById('productos-table');
+
+        totalCount.textContent = productos.length;
 
         function renderProductos(items) {
-            container.innerHTML = '';
+            tbody.innerHTML = '';
 
             if (items.length === 0) {
-                container.style.display = 'none';
+                table.style.display = 'none';
                 noResults.style.display = 'block';
-                return;
+            } else {
+                table.style.display = 'table';
+                noResults.style.display = 'none';
+
+                items.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="codigo">${String(p.codigo).padStart(3, '0')}</td>
+                        <td class="nombre">${p.nombre}</td>
+                        <td class="valor">$${parseFloat(p.precio).toFixed(2)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
             }
 
-            container.style.display = 'grid';
-            noResults.style.display = 'none';
-
-            items.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'producto';
-
-                const codigo = String(p.codigo).padStart(3, '0');
-                const precio = parseFloat(p.precio).toFixed(2);
-                const iva = p.iva || '0';
-
-                let html = '<div class="producto-codigo">Cod: ' + codigo + '</div>';
-                html += '<div class="producto-nombre">' + p.nombre + '</div>';
-                if (p.informacion_adicional) {
-                    html += '<div class="producto-info">' + p.informacion_adicional + '</div>';
-                }
-                html += '<div class="producto-precio">$' + precio + '</div>';
-                html += '<div class="badge-iva">Tarifa ' + iva + '% IVA</div>';
-
-                div.innerHTML = html;
-                container.appendChild(div);
-            });
+            filteredCount.textContent = items.length;
         }
 
         searchInput.addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
-            const filtered = productos.filter(function(p) {
-                return p.nombre.toLowerCase().indexOf(term) >= 0 ||
-                       p.codigo.indexOf(term) >= 0 ||
-                       (p.informacion_adicional || '').toLowerCase().indexOf(term) >= 0;
-            });
+            const filtered = productos.filter(p =>
+                p.nombre.toLowerCase().indexOf(term) >= 0 ||
+                p.codigo.indexOf(term) >= 0
+            );
             renderProductos(filtered);
         });
 
+        // Cargar inicial
         renderProductos(productos);
     </script>
 </body>
